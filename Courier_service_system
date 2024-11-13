@@ -1,88 +1,156 @@
-# Raghav sharma
-# Reg no.194
-#Aryan sharma
-# Reg no.197
-import mysql.connector as  sql
-conn=sql.connect(host= 'localhost' ,user= 'root' ,passwd= 'manager', database='courier_service_system2' )
-cust1=conn.cursor()
-print('WELCOME TO BATMAN COURIER SERVICE:')
-print('Hi')
-o=input('Press enter to begin your courier surfing')
-print('1.CREATE YOUR COURIER SERVICE ACCOUNT')
-print('2.LOGIN')
-choose=int(input('ENTER (1) FOR NEW ACCOUNT OR (2) FOR LOGIN:'))
-if choose==1:
-     name=input('Enter your user-name:')
-     passwd=input('Set your password here:')
-     passwd1=input('Confirm password:')
-     cust1.execute("INSERT INTO login VALUES(' "+name+" ',' "+passwd+" ')")
-     conn.commit()
-     print('ACCOUNT CREATED CONGRATULATIONS')
-     move_in=input('press enter to login:')
-     import B_COURIER_MENU
-elif choose==2:
-     email=input('Enter your email-id')
-     passd=input('Enter your PASSWORD:')
-     cust1.execute('select * from login where user_name=" '+email+' " and password=" '+passd+' " ')
-     if cust1.fetchone() is None:
-          print(' sorry your password in wrong')
-     else:
-         import B_COURIER_MENU
+# Importing necessary modules
+import mysql.connector as sql
+
+# Database connection
+conn = sql.connect(
+    host='localhost',
+    user='root',
+    passwd='manager',
+    database='courier_service_system2'
+)
+cust1 = conn.cursor()
+
+print("WELCOME TO BATMAN COURIER SERVICE!")
+print("Hi")
+input("Press enter to begin your courier surfing\n")
+
+print("1. CREATE YOUR COURIER SERVICE ACCOUNT")
+print("2. LOGIN")
+try:
+    choose = int(input("ENTER (1) FOR NEW ACCOUNT OR (2) FOR LOGIN: "))
+except ValueError:
+    print("Invalid input. Please enter 1 or 2.")
+    choose = 0
+
+if choose == 1:
+    # New account creation
+    name = input("Enter your user-name: ")
+    passwd = input("Set your password here: ")
+    passwd1 = input("Confirm password: ")
+
+    # Confirming password
+    if passwd == passwd1:
+        try:
+            cust1.execute("INSERT INTO login (user_name, password) VALUES (%s, %s)", (name, passwd))
+            conn.commit()
+            print("ACCOUNT CREATED! CONGRATULATIONS")
+            input("Press enter to login.")
+            # Import the menu
+            import B_COURIER_MENU
+        except sql.Error as e:
+            print("Error creating account:", e)
+    else:
+        print("Passwords do not match. Try again.")
+elif choose == 2:
+    # Existing user login
+    email = input("Enter your email-id: ")
+    passd = input("Enter your PASSWORD: ")
+    
+    # Parameterized query to prevent SQL injection
+    cust1.execute("SELECT * FROM login WHERE user_name = %s AND password = %s", (email, passd))
+    
+    if cust1.fetchone() is None:
+        print("Incorrect email or password.")
+    else:
+        print("Login successful.")
+        # Import the menu
+        import B_COURIER_MENU
+else:
+    print("Invalid choice. Please restart the program.")
+
+# B_COURIER_MENU:
+import mysql.connector as sql
+
+# Reconnecting to database in case of session reset
+conn = sql.connect(
+    host='localhost',
+    user='root',
+    passwd='manager',
+    database='courier_service_system2'
+)
+cust1 = conn.cursor()
+
+print("WELCOME TO BATMAN COURIER SERVICE:")
+print("1. Courier Order and Customer Details")
+print("2. Billing Procedure")
+print("3. Courier Service Boys")
+print("4. Exit")
+
+# Looping through menu options
+while True:
+    try:
+        choice = int(input("Enter the section you want to access (1, 2, 3, or 4): "))
+    except ValueError:
+        print("Invalid input. Please enter a number between 1 and 4.")
+        continue
+
+    if choice == 1:
+        print("A. Courier Placement")
+        print("B. Courier Order List")
+        sect = input("Enter the section you want to access: ").upper()
+
+        if sect == "A":
+            print("COURIER ORDER")
+            a = input("Enter the customer name: ")
+            try:
+                b = int(input("Enter the customer mobile number: "))
+            except ValueError:
+                print("Invalid mobile number.")
+                continue
+            c = input("Enter the customer address: ")
+            d = input("Enter the receiver name: ")
+            try:
+                e = int(input("Enter the receiver mobile number: "))
+            except ValueError:
+                print("Invalid receiver mobile number.")
+                continue
+            f = input("Enter the receiver address: ")
+
+            try:
+                cust1.execute("INSERT INTO couriers (customer_name, customer_mobile_number, customer_address, receiver_name, receiver_mobile_number, receiver_address) VALUES (%s, %s, %s, %s, %s, %s)", (a, b, c, d, e, f))
+                conn.commit()
+                print(f"{cust1.rowcount} courier(s) placed successfully.")
+            except sql.Error as e:
+                print("Error placing order:", e)
         
-“””B_COURIER_MENU:”””
-import mysql.connector as  sql
-conn=sql.connect(host= 'localhost' ,user= 'root' ,passwd= 'manager', database='courier_service_system2' )
-cust1=conn.cursor()
-for i in range(0,76):
- print('WELCOME TO BATMAN COURIER SERVICE:')
- print('1.Courier_order and customer_details')
- print('2.billing_procedure')
- print('3.courier_service_boys')
- print('4.exit')
- choice=int(input('enter the section you want to access:....(1,2,3or4)........:'))
- if choice==1:
-    print('A.courier placement')
-    print('B.courier order list')
-    sect=str(input('enter the section that you want to access:'))
-    if sect=="A":
-       print('COURIER-ORDER')
-       a=(input('enter the customer name:'))
-       b=int(input('enter the customer mobile number:'))
-       c=(input('enter the customer address:'))
-       d=(input('enter the receiver name:'))
-       e=int(input('enter the receiver mobile number:'))
-       f=(input('enter the receiver address:'))
-       cust1.execute("INSERT INTO couriers VALUES(' "+a+" ',"+str(b)+",' "+c+" ',' "+d+" ',"+str(e)+",' "+f+" ')")
-       conn.commit()
-       print(cust1.rowcount,'courier (s) placed')
-       print('===============================================================================================================')
-    elif sect=="B":
-       S=str(input('do you want to see your courier_order''(yes...\..no):'))
-       if S=="yes":
-         a=input('enter the customer mob number:')
-         cust1.execute('select * from couriers where customer_mobile_number="{}" '.format(a))
-         order=cust1.fetchall()
-         print('customer name,','customer mob no,','customer address,','receiver name,','receiver mob no,','receiver address:')
-         for j in order:
-              print(j)
-         print('===============================================================================================================')
-       else:
-            print('Thank you')
-            print('==============================================================================================================')
- elif choice==2:
-      print('BILLING PROCEDURE:[weight_in_kgs......AND.......cost_in_rupees]')
-      cust1.execute("select * from couriers2")
-      bill=cust1.fetchall()
-      for x in bill:
-           print(x)
-      print('===============================================================================================================')
- if choice==3:
-      city1=input('enter your city name:')
-      cust1.execute("select * from couriers3 where city='{}' ".format(city1))
-      boys=cust1.fetchall()
-      print(' City                 courier_boy     mobile no:')
-      for y in boys:
-             print(y)
-      print('===============================================================================================================')
- elif choice==4:
-            quit()
+        elif sect == "B":
+            S = input("Do you want to see your courier order (yes/no): ").strip().lower()
+            if S == "yes":
+                a = input("Enter the customer mobile number: ")
+                try:
+                    cust1.execute("SELECT * FROM couriers WHERE customer_mobile_number = %s", (a,))
+                    order = cust1.fetchall()
+                    print("Customer Name | Customer Mobile No | Customer Address | Receiver Name | Receiver Mobile No | Receiver Address")
+                    for j in order:
+                        print(j)
+                except sql.Error as e:
+                    print("Error retrieving order:", e)
+            else:
+                print("Thank you.")
+    
+    elif choice == 2:
+        print("BILLING PROCEDURE [weight_in_kgs and cost_in_rupees]")
+        try:
+            cust1.execute("SELECT * FROM couriers2")
+            bill = cust1.fetchall()
+            for x in bill:
+                print(x)
+        except sql.Error as e:
+            print("Error fetching billing details:", e)
+    
+    elif choice == 3:
+        city1 = input("Enter your city name: ")
+        try:
+            cust1.execute("SELECT * FROM couriers3 WHERE city = %s", (city1,))
+            boys = cust1.fetchall()
+            print("City | Courier Boy | Mobile No")
+            for y in boys:
+                print(y)
+        except sql.Error as e:
+            print("Error fetching courier boy details:", e)
+    
+    elif choice == 4:
+        print("Exiting the program.")
+        break
+    else:
+        print("Invalid choice. Please enter a number between 1 and 4.")
