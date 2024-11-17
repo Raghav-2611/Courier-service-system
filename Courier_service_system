@@ -1,7 +1,5 @@
-# Importing necessary modules
 import mysql.connector as sql
 
-# Database connection
 def connect_to_database():
     try:
         return sql.connect(
@@ -184,5 +182,4 @@ def courier_boys():
     except sql.Error as e:
         print(f"Error fetching courier boy details: {e}")
 
-# Start the program
 main_menu()
