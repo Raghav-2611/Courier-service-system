@@ -16,72 +16,74 @@ conn = connect_to_database()
 cust1 = conn.cursor()
 
 def main_menu():
-    print("WELCOME TO BATMAN COURIER SERVICE!")
-    print("\n1. CREATE YOUR COURIER SERVICE ACCOUNT")
-    print("2. LOGIN")
-    print("3. EXIT")
-    
-    try:
-        choice = int(input("\nEnter your choice: "))
-        if choice == 1:
-            create_account()
-        elif choice == 2:
-            login()
-        elif choice == 3:
-            print("Thank you for using Batman Courier Service!")
-            exit()
-        else:
-            print("Invalid choice. Please select 1, 2, or 3.")
-            main_menu()
-    except ValueError:
-        print("Invalid input. Please enter a number.")
-        main_menu()
+    while True:
+        print("\n" + "=" * 40)
+        print("      WELCOME TO BATMAN COURIER SERVICE")
+        print("=" * 40)
+        print("1. Create Courier Service Account")
+        print("2. Login")
+        print("3. Exit")
+
+        try:
+            choice = int(input("Enter your choice (1-3): "))
+            if choice == 1:
+                create_account()
+            elif choice == 2:
+                login()
+            elif choice == 3:
+                print("Thank you for using Batman Courier Service. Goodbye!")
+                break
+            else:
+                print("❌ Invalid choice. Please select between 1 and 3.")
+        except ValueError:
+            print("❌ Invalid input. Please enter a number.")
 
 def create_account():
-    print("\nCREATE A NEW ACCOUNT")
-    name = input("Enter your username: ").strip()
-    passwd = input("Set your password: ").strip()
-    passwd1 = input("Confirm your password: ").strip()
+    print("\n-- Create New Account --")
+    name = input("Enter username: ").strip()
+    
+    while True:
+        passwd = input("Set password: ").strip()
+        passwd1 = input("Confirm password: ").strip()
+        if passwd == passwd1:
+            break
+        else:
+            print("❌ Passwords do not match. Try again.")
 
-    if passwd == passwd1:
-        try:
-            cust1.execute("INSERT INTO login (user_name, password) VALUES (%s, %s)", (name, passwd))
-            conn.commit()
-            print("\nACCOUNT CREATED! CONGRATULATIONS")
-            input("Press enter to continue to login.")
-            login()
-        except sql.Error as e:
-            print(f"Error creating account: {e}")
-    else:
-        print("Passwords do not match. Please try again.")
-        create_account()
+    try:
+        cust1.execute("INSERT INTO login (user_name, password) VALUES (%s, %s)", (name, passwd))
+        conn.commit()
+        print("✅ Account created successfully!")
+        input("Press Enter to continue to login...")
+        login()
+    except sql.Error as e:
+        print(f"❌ Error creating account: {e}")
 
 def login():
-    print("\nLOGIN TO YOUR ACCOUNT")
-    email = input("Enter your username: ").strip()
-    passd = input("Enter your password: ").strip()
+    print("\n-- Login --")
+    email = input("Enter username: ").strip()
+    passd = input("Enter password: ").strip()
 
     try:
         cust1.execute("SELECT * FROM login WHERE user_name = %s AND password = %s", (email, passd))
         if cust1.fetchone():
-            print("\nLogin successful!")
+            print("✅ Login successful!")
             menu()
         else:
-            print("\nIncorrect username or password.")
-            main_menu()
+            print("❌ Incorrect username or password.")
     except sql.Error as e:
-        print(f"Error during login: {e}")
+        print(f"❌ Error during login: {e}")
 
 def menu():
     while True:
-        print("\nMAIN MENU")
-        print("1. Courier Order and Customer Details")
+        print("\n-- Main Menu --")
+        print("1. Courier Order & Customer Details")
         print("2. Billing Procedure")
         print("3. Courier Service Boys")
-        print("4. Exit")
-        
+        print("4. Logout")
+
         try:
-            choice = int(input("\nEnter your choice: "))
+            choice = int(input("Enter your choice (1-4): "))
             if choice == 1:
                 courier_section()
             elif choice == 2:
@@ -89,97 +91,96 @@ def menu():
             elif choice == 3:
                 courier_boys()
             elif choice == 4:
-                print("\nExiting the program. Thank you!")
+                print("🔒 Logged out successfully.")
                 break
             else:
-                print("Invalid choice. Please select a number between 1 and 4.")
+                print("❌ Invalid choice. Choose between 1 and 4.")
         except ValueError:
-            print("Invalid input. Please enter a number.")
+            print("❌ Please enter a valid number.")
 
 def courier_section():
-    print("\nCOURIER ORDER AND CUSTOMER DETAILS")
-    print("A. Courier Placement")
-    print("B. Courier Order List")
-    sect = input("Enter the section you want to access (A/B): ").strip().upper()
-
+    print("\n-- Courier Orders --")
+    print("A. Place Courier Order")
+    print("B. View My Orders")
+    
+    sect = input("Enter section (A/B): ").strip().upper()
     if sect == "A":
         place_order()
     elif sect == "B":
         view_orders()
     else:
-        print("Invalid section. Returning to main menu.")
-        
+        print("❌ Invalid section. Returning to main menu.")
+
 def place_order():
-    print("\nPLACE A NEW COURIER ORDER")
-    a = input("Enter the customer name: ").strip()
+    print("\n-- Place New Courier Order --")
+    name = input("Customer name: ").strip()
     try:
-        b = int(input("Enter the customer mobile number: "))
+        mobile = int(input("Customer mobile number: "))
     except ValueError:
-        print("Invalid mobile number.")
+        print("❌ Invalid mobile number.")
         return
-    c = input("Enter the customer address: ").strip()
-    d = input("Enter the receiver name: ").strip()
+    address = input("Customer address: ").strip()
+    r_name = input("Receiver name: ").strip()
     try:
-        e = int(input("Enter the receiver mobile number: "))
+        r_mobile = int(input("Receiver mobile number: "))
     except ValueError:
-        print("Invalid receiver mobile number.")
+        print("❌ Invalid receiver mobile number.")
         return
-    f = input("Enter the receiver address: ").strip()
+    r_address = input("Receiver address: ").strip()
 
     try:
-        cust1.execute(
-            "INSERT INTO couriers (customer_name, customer_mobile_number, customer_address, receiver_name, receiver_mobile_number, receiver_address) VALUES (%s, %s, %s, %s, %s, %s)",
-            (a, b, c, d, e, f)
-        )
+        cust1.execute("""
+            INSERT INTO couriers 
+            (customer_name, customer_mobile_number, customer_address, receiver_name, receiver_mobile_number, receiver_address)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (name, mobile, address, r_name, r_mobile, r_address))
         conn.commit()
-        print(f"\n{cust1.rowcount} courier(s) placed successfully.")
+        print(f"✅ {cust1.rowcount} courier(s) placed successfully.")
     except sql.Error as e:
-        print(f"Error placing order: {e}")
+        print(f"❌ Error placing order: {e}")
 
 def view_orders():
-    print("\nVIEW YOUR COURIER ORDERS")
-    a = input("Enter the customer mobile number: ").strip()
-
+    print("\n-- View Orders --")
+    mobile = input("Enter your mobile number: ").strip()
     try:
-        cust1.execute("SELECT * FROM couriers WHERE customer_mobile_number = %s", (a,))
+        cust1.execute("SELECT * FROM couriers WHERE customer_mobile_number = %s", (mobile,))
         orders = cust1.fetchall()
         if orders:
-            print("\nCustomer Name | Customer Mobile No | Customer Address | Receiver Name | Receiver Mobile No | Receiver Address")
-            for order in orders:
-                print(order)
+            print("\nCustomer Name | Mobile | Address | Receiver | R-Mobile | R-Address")
+            for row in orders:
+                print(" | ".join(str(x) for x in row))
         else:
-            print("No orders found for this mobile number.")
+            print("❌ No orders found.")
     except sql.Error as e:
-        print(f"Error retrieving orders: {e}")
+        print(f"❌ Error fetching orders: {e}")
 
 def billing_procedure():
-    print("\nBILLING PROCEDURE")
+    print("\n-- Billing Information --")
     try:
         cust1.execute("SELECT * FROM couriers2")
         bills = cust1.fetchall()
         if bills:
             print("\nWeight (kg) | Cost (Rs)")
             for bill in bills:
-                print(bill)
+                print(" | ".join(str(x) for x in bill))
         else:
-            print("No billing details found.")
+            print("❌ No billing records found.")
     except sql.Error as e:
-        print(f"Error fetching billing details: {e}")
+        print(f"❌ Error retrieving billing: {e}")
 
 def courier_boys():
-    print("\nCOURIER SERVICE BOYS")
-    city = input("Enter your city name: ").strip()
-
+    print("\n-- Courier Service Boys --")
+    city = input("Enter your city: ").strip()
     try:
         cust1.execute("SELECT * FROM couriers3 WHERE city = %s", (city,))
         boys = cust1.fetchall()
         if boys:
             print("\nCity | Courier Boy | Mobile No")
             for boy in boys:
-                print(boy)
+                print(" | ".join(str(x) for x in boy))
         else:
-            print("No courier boys found for this city.")
+            print("❌ No courier boys found in this city.")
     except sql.Error as e:
-        print(f"Error fetching courier boy details: {e}")
+        print(f"❌ Error retrieving courier boy details: {e}")
 
 main_menu()
